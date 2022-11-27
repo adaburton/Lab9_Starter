@@ -7,6 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "09a51b24ec434dff8f939a15d8a60c2e"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+                            
   <style>
     button {
       margin: 3px;
@@ -88,17 +96,211 @@
   </main>
 
   <script>
+
+    class FieldError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = "Field Error";
+      }
+    }
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
-      e.preventDefault();
-      let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
-      let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      try{
+        e.preventDefault();
+        let output = document.querySelector('output');
+        let firstNum = document.querySelector('#first-num').value;
+        let secondNum = document.querySelector('#second-num').value;
+        let operator = document.querySelector('#operator').value;
+
+        // user didn't fill out the first field
+        if(firstNum == '') throw new FieldError("The first field isn't filled out");
+
+        // user didn't fill out the second field
+        if(secondNum == '') throw new FieldError("The second field isn't filled out");
+
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      } catch (err) {
+        console.error(err);
+      } finally {
+        console.log(`operation: ${operator.value}`);
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+
+    // Console Log
+    errorBtns[0].addEventListener('click', () => {
+      // getting the values from the page
+      let output = document.querySelector('output').value;
+      let firstNum = document.querySelector('#first-num').value;
+      let secondNum = document.querySelector('#second-num').value;
+      let operator = document.querySelector('#operator').value;
+      // log whats going on
+      console.log(`${firstNum} ${operator} ${secondNum} = ${output}`);
+    });
+
+    // Console Error
+    errorBtns[1].addEventListener('click', () => {
+      // getting the values from the page
+      let output = document.querySelector('output').value;
+      let firstNum = document.querySelector('#first-num').value;
+      let secondNum = document.querySelector('#second-num').value;
+      let operator = document.querySelector('#operator').value;
+
+      // throw an error if the output is empty
+      if(output = ' ') console.error(`${firstNum} ${operator} ${secondNum} = ${output}`);
+    });
+
+    // Console Count
+    errorBtns[2].addEventListener('click', () => {
+      // count
+      console.count();
+    });
+
+    // Counsole Warn
+    errorBtns[3].addEventListener('click', () => {
+      console.warn('This is a warning!');
+    });
+
+    // Console Assert
+    errorBtns[4].addEventListener('click', () => {
+      // getting the values from the page
+      try {
+        let output = document.querySelector('output').value;
+        let firstNum = document.querySelector('#first-num').value;
+        let secondNum = document.querySelector('#second-num').value;
+        let operator = document.querySelector('#operator').value;
+      
+        // throw an error if not all fields are filled
+        if (firstNum == '' || secondNum == '') throw new FieldError('Not all of the fields are properly filled out');
+
+        // evaluate the proper solution
+        solution = eval(`${firstNum} ${operator} ${secondNum}`)
+
+        // assert that's what we got(will fail if the submit button 
+        // has not been pressed to update the output field)
+        console.assert(output == solution, `${firstNum} ${operator} ${secondNum} should equal ${solution}`);
+      } catch (err) {
+        // log the error if one was caught
+        console.error(err);
+      }
+    });
+
+    // Console Clear
+    errorBtns[5].addEventListener('click', () =>{
+      console.clear();
+    });
+
+    // Console Dir
+    errorBtns[6].addEventListener('click', () =>{
+      console.dir(errorBtns[6]);
+    });
+
+    // Console dirxml
+    errorBtns[7].addEventListener('click', () =>{
+      console.dirxml(document);
+    });
+
+    // Console Group Start
+    errorBtns[8].addEventListener('click', () =>{
+      console.group('Logs');
+    });
+    
+    // Console Group End
+    errorBtns[9].addEventListener('click', () =>{
+      console.groupEnd('Logs');
+    });
+
+    // Console Table
+    errorBtns[10].addEventListener('click', () =>{
+      try{
+        let output = document.querySelector('output').value;
+        let firstNum = document.querySelector('#first-num').value;
+        let secondNum = document.querySelector('#second-num').value;
+        let operator = document.querySelector('#operator').value;
+      
+        // throw an error if not all fields are filled
+        if (firstNum == '' || secondNum == '') throw new FieldError('Not all of the fields are properly filled out');
+
+        // info for our table
+        var numbers = [
+          {
+            position: 'first',
+            value: firstNum,
+          },
+          {
+            position: 'second',
+            value: operator,
+          },
+          {
+            position: 'third',
+            value: secondNum,
+          },
+          {
+            position: 'bottom',
+            value: output,
+          }
+
+        ];
+
+        // log info as a table
+        console.table(numbers);
+      } catch (err) {
+        console.error(err);
+      }
+      
+    });
+
+    // Start Timer
+    errorBtns[11].addEventListener('click', () =>{
+      console.time();
+    });
+
+    // End Timer
+    errorBtns[12].addEventListener('click', () =>{
+      console.timeEnd();
+    });
+
+    // Console Trace
+    errorBtns[13].addEventListener('click', () =>{
+      console.trace();
+    });
+
+    // Trigger a Global Error
+    errorBtns[14].addEventListener('click', () => {
+      // this function will cause a global error
+      badfunction();
+    });
+
+    // set local custom global error handler
+    window.onerror = function(errorMessage, url, line) { console.error(`${errorMessage} from ${url} at ${line}`)};
+
+    // new error handler that sends the error to a remote location
+    function trackJS(errorMessage, url, line){
+      TrackJS.track(`${errorMessage} from ${url} at ${line}`);
+    }
+
+    // adds remote error handling
+    function getNewErrorHandler(){
+      // if there is already a global error handler
+      if(window.onerror){
+        // save the old one
+        var oldError = window.onerror;
+        // new handler does both
+        var newErrorHandler = function (errorMessage, url, line) { trackJS(errorMessage, url, line); oldError(errorMessage, url, line)};
+        // global error handler does both
+        window.onerror = newErrorHandler;
+      } else {
+        // global error handler does remote handling
+        window.onerror = trackJS(errorMessage, url, line);
+
+      }
+    }
+
+    // bind the new error handler
+    getNewErrorHandler();
 
     // Start your code here
     // You may move this JS to another file if you wish
